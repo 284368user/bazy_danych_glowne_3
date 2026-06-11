@@ -28,3 +28,6 @@
 [submodule "source/rozdzial_3/Modele"]
 	path = source/rozdzial_3/Modele
 	url = git@github.com:OskarProgrammer/model-konceptualny-logiczny-fizyczny.git
+[submodule "source/rozdzial_4/Implementacja"]
+	path = source/rozdzial_4/Implementacja
+	url = git@github.com:OskarProgrammer/implementacja-bazy-danych.git
