@@ -25,3 +25,6 @@
 [submodule "source/rozdzial_4/Implementacja"]
 	path = source/rozdzial_4/Implementacja
 	url = git@github.com:OskarProgrammer/implementacja-bazy-danych.git
+[submodule "source/rozdzial_2/rozdzial_24"]
+	path = source/rozdzial_2/rozdzial_24
+	url = git@github.com:OskarProgrammer/monitorowanie_i_diagnostyka.git
