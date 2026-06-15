@@ -28,3 +28,6 @@
 [submodule "source/rozdzial_2/rozdzial_24"]
 	path = source/rozdzial_2/rozdzial_24
 	url = git@github.com:OskarProgrammer/monitorowanie_i_diagnostyka.git
+[submodule "source/rozdzial_2/rozdzial_25"]
+	path = source/rozdzial_2/rozdzial_25
+	url = git@github.com:KMachoK/Tematyczne.git
