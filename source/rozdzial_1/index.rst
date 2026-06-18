@@ -27,3 +27,7 @@ Implementacja
 =============
 
 * `Implementacja bazy danych <https://github.com/OskarProgrammer/implementacja-bazy-danych.git>`_
+
+Repozytorium główne
+===================
+* `Repozytorium główne <https://github.com/OskarProgrammer/bazy_danych_glowne_3.git>`
