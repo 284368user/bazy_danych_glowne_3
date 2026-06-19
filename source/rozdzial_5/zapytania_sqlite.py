@@ -47,7 +47,7 @@ def wykonaj_zapytanie_sqlite(polecenie):
 
 def ranking_klientow_sqlite():
     """
-    Wyświetla ranking klientów według łącznej wartości złożonych zamówień.
+    Zwraca ranking klientów według łącznej wartości złożonych zamówień.
 
     Cel funkcji:
         Funkcja pozwala określić, którzy klienci wygenerowali największą
@@ -77,6 +77,7 @@ def ranking_klientow_sqlite():
         Zapytanie łączy klientów z zamówieniami oraz pozycjami zamówień.
         Następnie grupuje dane według klienta i oblicza sumaryczną wartość
         zakupów. Wyniki sortowane są malejąco według wartości zamówień.
+        Klienci, którzy nie mają pozycji zamówień, nie są uwzględniani.
     """
     polecenie = """
     SELECT
@@ -139,6 +140,8 @@ def sprzedaz_wedlug_kategorii_sqlite():
         Zapytanie łączy kategorie z produktami oraz pozycjami zamówień.
         Dla każdej kategorii obliczana jest liczba różnych produktów,
         liczba sprzedanych sztuk oraz całkowita wartość sprzedaży.
+        Kategorie i produkty bez zarejestrowanych pozycji zamówień nie są
+        uwzględniane w wyniku.
     """
     polecenie = """
     SELECT
@@ -169,7 +172,8 @@ def sprzedaz_wedlug_kategorii_sqlite():
 
 def pelne_zamowienia_sqlite():
     """
-    Wyświetla pełny widok zamówień z danymi klienta, produktu, płatności i wysyłki.
+    Zwraca szczegółowy widok zamówień z danymi klienta, produktu, płatności
+    i wysyłki.
 
     Cel funkcji:
         Funkcja pozwala przeanalizować kompletne informacje o zamówieniach
@@ -194,15 +198,15 @@ def pelne_zamowienia_sqlite():
         ``conn`` do bazy SQLite.
 
     Dane wyjściowe:
-        DataFrame zawierający pełny opis zamówienia: dane klienta, produkt,
-        ilość, cenę historyczną, wartość pozycji, status płatności oraz status
-        wysyłki.
+        DataFrame zawierający szczegółowy opis zamówienia: dane klienta,
+        produkt, ilość, cenę historyczną, wartość pozycji, status płatności
+        oraz status wysyłki.
 
     Opis działania:
         Zapytanie rozpoczyna od tabeli zamówień, następnie dołącza klientów,
         pozycje zamówień, produkty, płatności i wysyłki. Dzięki ``LEFT JOIN``
         możliwe jest pokazanie także zamówień, które nie posiadają jeszcze
-        wszystkich danych, np. wysyłki.
+        pozycji, informacji o płatności lub danych wysyłki.
     """
     polecenie = """
     SELECT
@@ -248,7 +252,7 @@ def pelne_zamowienia_sqlite():
 
 def najlepiej_oceniane_produkty_sqlite():
     """
-    Wyświetla najlepiej oceniane produkty wraz z kategorią i producentem.
+    Zwraca najlepiej oceniane produkty wraz z kategorią i producentem.
 
     Cel funkcji:
         Funkcja pozwala sprawdzić, które produkty uzyskały najwyższe oceny
