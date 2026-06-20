@@ -42,7 +42,6 @@ def wykonaj_zapytanie_postgres(polecenie):
     """
     with dbEngine.connect() as connection:
         tabela = connection.execute(text(polecenie))
-        connection.commit()
 
         kolumny = tabela.keys()
         dane = tabela.fetchall()
@@ -56,7 +55,7 @@ def wykonaj_zapytanie_postgres(polecenie):
 
 def ranking_klientow_postgres():
     """
-    Zwraca ranking klientów według łącznej wartości złożonych zamówień.
+    Zwraca ranking klientów według wartości opłaconych zamówień po rabacie.
 
     Cel funkcji:
         Funkcja pozwala określić, którzy klienci wygenerowali największą
@@ -66,6 +65,7 @@ def ranking_klientow_postgres():
         - ``klienci``
         - ``zamowienia``
         - ``pozycje_zamowienia``
+        - ``platnosci``
 
     Zastosowane elementy SQL:
         - złączenia ``JOIN``
@@ -83,9 +83,9 @@ def ranking_klientow_postgres():
         e-mail, liczbę zamówień oraz łączną wartość zamówień.
 
     Opis działania:
-        Zapytanie łączy klientów z zamówieniami oraz pozycjami zamówień.
-        Następnie grupuje dane według klienta i oblicza sumaryczną wartość
-        zakupów. Wyniki sortowane są malejąco według wartości zamówień.
+        Zapytanie łączy klientów z zamówieniami, pozycjami i płatnościami.
+        Uwzględnia tylko zakończone płatności i nieanulowane zamówienia,
+        a wartość oblicza po historycznym rabacie.
         Klienci, którzy nie mają pozycji zamówień, nie są uwzględniani.
     """
     polecenie = """
@@ -95,12 +95,20 @@ def ranking_klientow_postgres():
         k.nazwisko,
         k.email,
         COUNT(DISTINCT z.id_zamowienia) AS liczba_zamowien,
-        COALESCE(SUM(pz.ilosc * pz.cena_historyczna), 0) AS wartosc_zamowien
+        ROUND(COALESCE(SUM(
+            pz.ilosc * pz.cena_historyczna
+            * (100 - z.znizka_zastosowana) / 100.0
+        ), 0), 2) AS wartosc_zamowien
     FROM klienci k
     JOIN zamowienia z
         ON k.id_klienta = z.id_klienta
     JOIN pozycje_zamowienia pz
         ON z.id_zamowienia = pz.id_zamowienia
+    JOIN platnosci pl
+        ON z.id_zamowienia = pl.id_zamowienia
+    WHERE
+        pl.status_platnosci = 'Zakończona'
+        AND z.status_zamowienia <> 'Anulowane'
     GROUP BY
         k.id_klienta,
         k.imie,
@@ -130,6 +138,8 @@ def sprzedaz_wedlug_kategorii_postgres():
         - ``kategorie``
         - ``produkty``
         - ``pozycje_zamowienia``
+        - ``zamowienia``
+        - ``platnosci``
 
     Zastosowane elementy SQL:
         - złączenia ``JOIN``
@@ -148,7 +158,8 @@ def sprzedaz_wedlug_kategorii_postgres():
     Opis działania:
         Zapytanie łączy kategorie z produktami oraz pozycjami zamówień.
         Dla każdej kategorii obliczana jest liczba różnych produktów,
-        liczba sprzedanych sztuk oraz całkowita wartość sprzedaży.
+        liczba sprzedanych sztuk oraz wartość opłaconej, nieanulowanej
+        sprzedaży po historycznym rabacie.
         Kategorie i produkty bez zarejestrowanych pozycji zamówień nie są
         uwzględniane w wyniku.
     """
@@ -158,12 +169,22 @@ def sprzedaz_wedlug_kategorii_postgres():
         kat.nazwa_kategorii,
         COUNT(DISTINCT p.id_produktu) AS liczba_produktow,
         COALESCE(SUM(pz.ilosc), 0) AS liczba_sprzedanych_sztuk,
-        COALESCE(SUM(pz.ilosc * pz.cena_historyczna), 0) AS wartosc_sprzedazy
+        ROUND(COALESCE(SUM(
+            pz.ilosc * pz.cena_historyczna
+            * (100 - z.znizka_zastosowana) / 100.0
+        ), 0), 2) AS wartosc_sprzedazy
     FROM kategorie kat
     JOIN produkty p
         ON kat.id_kategorii = p.id_kategorii
     JOIN pozycje_zamowienia pz
         ON p.id_produktu = pz.id_produktu
+    JOIN zamowienia z
+        ON pz.id_zamowienia = z.id_zamowienia
+    JOIN platnosci pl
+        ON z.id_zamowienia = pl.id_zamowienia
+    WHERE
+        pl.status_platnosci = 'Zakończona'
+        AND z.status_zamowienia <> 'Anulowane'
     GROUP BY
         kat.id_kategorii,
         kat.nazwa_kategorii
@@ -208,8 +229,8 @@ def pelne_zamowienia_postgres():
 
     Dane wyjściowe:
         DataFrame zawierający szczegółowy opis zamówienia: dane klienta,
-        produkt, ilość, cenę historyczną, wartość pozycji, status płatności
-        oraz status wysyłki.
+        produkt, ilość, cenę historyczną, rabat, wartość pozycji przed i po
+        rabacie, status płatności oraz status wysyłki.
 
     Opis działania:
         Zapytanie rozpoczyna od tabeli zamówień, następnie dołącza klientów,
@@ -222,6 +243,7 @@ def pelne_zamowienia_postgres():
         z.id_zamowienia,
         z.data_zamowienia,
         z.status_zamowienia,
+        z.znizka_zastosowana,
         k.id_klienta,
         k.imie,
         k.nazwisko,
@@ -230,7 +252,12 @@ def pelne_zamowienia_postgres():
         p.nazwa AS produkt,
         pz.ilosc,
         pz.cena_historyczna,
-        pz.ilosc * pz.cena_historyczna AS wartosc_pozycji,
+        pz.ilosc * pz.cena_historyczna AS wartosc_pozycji_brutto,
+        ROUND(
+            pz.ilosc * pz.cena_historyczna
+            * (100 - z.znizka_zastosowana) / 100.0,
+            2
+        ) AS wartosc_pozycji_po_rabacie,
         pl.metoda_platnosci,
         pl.status_platnosci,
         w.firma_kurierska,

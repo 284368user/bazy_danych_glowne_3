@@ -22,6 +22,11 @@ extensions = [
     "sphinx.ext.autodoc",
 ]
 
+autodoc_mock_imports = [
+    "pandas",
+    "sqlalchemy",
+]
+
 templates_path = ['_templates']
 exclude_patterns = []
 
@@ -32,3 +37,9 @@ language = 'pl'
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
+# -- Options for LaTeX/PDF output -------------------------------------------
+
+latex_elements = {
+    'papersize': 'a4paper',
+}

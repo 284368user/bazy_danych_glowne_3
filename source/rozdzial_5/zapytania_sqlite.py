@@ -47,7 +47,7 @@ def wykonaj_zapytanie_sqlite(polecenie):
 
 def ranking_klientow_sqlite():
     """
-    Zwraca ranking klientów według łącznej wartości złożonych zamówień.
+    Zwraca ranking klientów według wartości opłaconych zamówień po rabacie.
 
     Cel funkcji:
         Funkcja pozwala określić, którzy klienci wygenerowali największą
@@ -57,6 +57,7 @@ def ranking_klientow_sqlite():
         - ``Klienci``
         - ``Zamowienia``
         - ``Pozycje_Zamowienia``
+        - ``Platnosci``
 
     Zastosowane elementy SQL:
         - złączenia ``JOIN``
@@ -74,9 +75,9 @@ def ranking_klientow_sqlite():
         e-mail, liczbę zamówień oraz łączną wartość zamówień.
 
     Opis działania:
-        Zapytanie łączy klientów z zamówieniami oraz pozycjami zamówień.
-        Następnie grupuje dane według klienta i oblicza sumaryczną wartość
-        zakupów. Wyniki sortowane są malejąco według wartości zamówień.
+        Zapytanie łączy klientów z zamówieniami, pozycjami i płatnościami.
+        Uwzględnia tylko zakończone płatności i nieanulowane zamówienia,
+        a wartość oblicza po historycznym rabacie.
         Klienci, którzy nie mają pozycji zamówień, nie są uwzględniani.
     """
     polecenie = """
@@ -86,12 +87,20 @@ def ranking_klientow_sqlite():
         k.Nazwisko,
         k.Email,
         COUNT(DISTINCT z.ID_Zamowienia) AS Liczba_zamowien,
-        COALESCE(SUM(pz.Ilosc * pz.Cena_historyczna), 0) AS Wartosc_zamowien
+        ROUND(COALESCE(SUM(
+            pz.Ilosc * pz.Cena_historyczna
+            * (100 - z.Znizka_zastosowana) / 100.0
+        ), 0), 2) AS Wartosc_zamowien
     FROM Klienci k
     JOIN Zamowienia z
         ON k.ID_Klienta = z.ID_Klienta
     JOIN Pozycje_Zamowienia pz
         ON z.ID_Zamowienia = pz.ID_Zamowienia
+    JOIN Platnosci pl
+        ON z.ID_Zamowienia = pl.ID_Zamowienia
+    WHERE
+        pl.Status_platnosci = 'Zakończona'
+        AND z.Status_zamowienia <> 'Anulowane'
     GROUP BY
         k.ID_Klienta,
         k.Imie,
@@ -121,6 +130,8 @@ def sprzedaz_wedlug_kategorii_sqlite():
         - ``Kategorie``
         - ``Produkty``
         - ``Pozycje_Zamowienia``
+        - ``Zamowienia``
+        - ``Platnosci``
 
     Zastosowane elementy SQL:
         - złączenia ``JOIN``
@@ -139,7 +150,8 @@ def sprzedaz_wedlug_kategorii_sqlite():
     Opis działania:
         Zapytanie łączy kategorie z produktami oraz pozycjami zamówień.
         Dla każdej kategorii obliczana jest liczba różnych produktów,
-        liczba sprzedanych sztuk oraz całkowita wartość sprzedaży.
+        liczba sprzedanych sztuk oraz wartość opłaconej, nieanulowanej
+        sprzedaży po historycznym rabacie.
         Kategorie i produkty bez zarejestrowanych pozycji zamówień nie są
         uwzględniane w wyniku.
     """
@@ -149,12 +161,22 @@ def sprzedaz_wedlug_kategorii_sqlite():
         kat.Nazwa_kategorii,
         COUNT(DISTINCT p.ID_Produktu) AS Liczba_produktow,
         COALESCE(SUM(pz.Ilosc), 0) AS Liczba_sprzedanych_sztuk,
-        COALESCE(SUM(pz.Ilosc * pz.Cena_historyczna), 0) AS Wartosc_sprzedazy
+        ROUND(COALESCE(SUM(
+            pz.Ilosc * pz.Cena_historyczna
+            * (100 - z.Znizka_zastosowana) / 100.0
+        ), 0), 2) AS Wartosc_sprzedazy
     FROM Kategorie kat
     JOIN Produkty p
         ON kat.ID_Kategorii = p.ID_Kategorii
     JOIN Pozycje_Zamowienia pz
         ON p.ID_Produktu = pz.ID_Produktu
+    JOIN Zamowienia z
+        ON pz.ID_Zamowienia = z.ID_Zamowienia
+    JOIN Platnosci pl
+        ON z.ID_Zamowienia = pl.ID_Zamowienia
+    WHERE
+        pl.Status_platnosci = 'Zakończona'
+        AND z.Status_zamowienia <> 'Anulowane'
     GROUP BY
         kat.ID_Kategorii,
         kat.Nazwa_kategorii
@@ -199,8 +221,8 @@ def pelne_zamowienia_sqlite():
 
     Dane wyjściowe:
         DataFrame zawierający szczegółowy opis zamówienia: dane klienta,
-        produkt, ilość, cenę historyczną, wartość pozycji, status płatności
-        oraz status wysyłki.
+        produkt, ilość, cenę historyczną, rabat, wartość pozycji przed i po
+        rabacie, status płatności oraz status wysyłki.
 
     Opis działania:
         Zapytanie rozpoczyna od tabeli zamówień, następnie dołącza klientów,
@@ -213,6 +235,7 @@ def pelne_zamowienia_sqlite():
         z.ID_Zamowienia,
         z.Data_zamowienia,
         z.Status_zamowienia,
+        z.Znizka_zastosowana,
         k.ID_Klienta,
         k.Imie,
         k.Nazwisko,
@@ -221,7 +244,12 @@ def pelne_zamowienia_sqlite():
         p.Nazwa AS Produkt,
         pz.Ilosc,
         pz.Cena_historyczna,
-        pz.Ilosc * pz.Cena_historyczna AS Wartosc_pozycji,
+        pz.Ilosc * pz.Cena_historyczna AS Wartosc_pozycji_brutto,
+        ROUND(
+            pz.Ilosc * pz.Cena_historyczna
+            * (100 - z.Znizka_zastosowana) / 100.0,
+            2
+        ) AS Wartosc_pozycji_po_rabacie,
         pl.Metoda_platnosci,
         pl.Status_platnosci,
         w.Firma_kurierska,

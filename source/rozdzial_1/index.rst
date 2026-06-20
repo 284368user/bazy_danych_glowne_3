@@ -33,10 +33,10 @@ W dalszej części raportu przedstawiono implementację schematów w obu systema
 zarządzania bazą danych oraz wsadowe wprowadzanie danych z pliku CSV za pomocą
 skryptów napisanych w języku Python. Omówiono walidację danych, sprawdzanie
 istnienia rekordów powiązanych, kolejność operacji oraz obsługę transakcji
-i błędów. Działanie utworzonych baz sprawdzono następnie za pomocą zapytań
-wykorzystujących złączenia, agregacje, grupowanie, sortowanie i podzapytania.
-Zapytania przygotowano oddzielnie dla PostgreSQL i SQLite, co umożliwiło
-porównanie działania obu silników na tym samym modelu i zbiorze danych.
+i błędów. Do sprawdzenia działania utworzonych baz przygotowano następnie zapytania
+wykorzystujące złączenia, agregacje, grupowanie, sortowanie i podzapytania.
+Zapytania przygotowano oddzielnie dla PostgreSQL i SQLite, co umożliwia
+porównywanie działania obu silników na tym samym modelu i zbiorze danych.
 
 Wnioski z ćwiczeń i eksperymentów
 =================================
@@ -53,25 +53,28 @@ Normalizacja do trzeciej postaci normalnej ograniczyła powielanie informacji
 i ryzyko wystąpienia anomalii podczas dodawania, modyfikowania oraz usuwania
 danych. Jednocześnie wykazała, że bardziej uporządkowana struktura wymaga
 stosowania złączeń wielu tabel podczas odtwarzania pełnego obrazu procesu
-sprzedaży. Przygotowane zapytania potwierdziły, że taki model pozwala zarówno
+sprzedaży. Przygotowane zapytania pokazują, że taki model pozwala zarówno
 odtworzyć szczegóły zamówień, jak i wykonywać analizy, na przykład tworzyć
 ranking klientów, obliczać sprzedaż według kategorii czy zestawiać oceny
-produktów.
+produktów. Wartości sprzedaży są liczone dla zakończonych płatności,
+z pominięciem anulowanych zamówień i z uwzględnieniem historycznego rabatu.
 
 Implementacja w PostgreSQL i SQLite wykazała, że ten sam model logiczny może
 zostać przeniesiony pomiędzy różnymi systemami bazodanowymi, lecz wymaga
 dostosowania typów danych, sposobu generowania identyfikatorów i niektórych
 elementów składni. PostgreSQL oferuje bardziej precyzyjne typy, takie jak
 ``NUMERIC`` i ``TIMESTAMP``, natomiast SQLite wykorzystuje prostszy system klas
-przechowywania. Mimo tych różnic oba rozwiązania mogą realizować te same reguły
-biznesowe i zwracać zgodne wyniki zapytań.
+przechowywania. Mimo tych różnic oba rozwiązania realizują ten sam zestaw
+reguł integralności, a odpowiadające sobie zapytania umożliwiają porównanie
+wyników.
 
 Eksperymenty z importem danych potwierdziły znaczenie walidacji, więzów
 integralności oraz transakcji. Dane muszą być dodawane w kolejności wynikającej
-z zależności między tabelami, a błędny rekord nie powinien pozostawiać bazy
-w stanie częściowo zmodyfikowanym. Zastosowanie sprawdzania danych, zatwierdzania
-poprawnych operacji i wycofywania błędnych pozwala zachować spójność bazy również
-podczas automatycznego zasilania jej większą liczbą rekordów.
+z zależności między tabelami, a błąd jednej pozycji nie powinien pozostawiać
+niekompletnego zamówienia. Wiersze należące do tego samego zamówienia są
+przetwarzane w jednej transakcji, dlatego błąd dowolnej pozycji powoduje
+wycofanie całego zamówienia. Pozwala to zachować spójność bazy również podczas
+automatycznego zasilania jej większą liczbą rekordów.
 
 Całość prac pokazała również, że samo poprawne zaprojektowanie tabel nie
 wyczerpuje zagadnienia utrzymania bazy danych. W rzeczywistym środowisku równie

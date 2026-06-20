@@ -58,23 +58,20 @@ W każdym module znajduje się ponadto funkcja pomocnicza odpowiedzialna za
 wykonanie przekazanego zapytania i utworzenie obiektu ``pandas.DataFrame``.
 
 Każde zapytanie zostało przygotowane w dwóch wariantach: dla bazy PostgreSQL
-oraz dla bazy SQLite. Dzięki temu możliwe jest sprawdzenie, czy obie bazy danych
-zwracają zgodne wyniki dla tych samych danych wejściowych.
+oraz dla bazy SQLite. Dzięki temu możliwe jest porównanie wyników obu silników
+dla tych samych danych wejściowych.
 
 Weryfikacja działania w JupyterLab
 ==================================
 
-Funkcje zostały wykonane i sprawdzone w środowisku JupyterLab. Notebooki
-zawierające wywołania funkcji oraz wyniki zapytań są przechowywane jako
-zewnętrzne materiały robocze w następujących lokalizacjach:
+Notebooki używane podczas pracy są materiałami zewnętrznymi i nie stanowią
+części tego repozytorium. Zawierają wywołania funkcji oraz wyniki zapytań:
 
 * ``Sprawozdanie_z_modelu/zapytania_do_bazy_wlasne_psql.ipynb`` - notebook z zapytaniami dla bazy PostgreSQL.
 * ``Sprawozdanie_z_modelu/zapytania_do_bazy_wlasne_sqlite.ipynb`` - notebook z zapytaniami dla bazy SQLite.
 
-W notebookach zweryfikowano, że przygotowane funkcje poprawnie wykonują
-zapytania SQL oraz zwracają wyniki zgodne ze strukturą utworzonej bazy danych.
-Zrzuty wyników uzyskanych w JupyterLab stanowią dodatkowe potwierdzenie
-zgodności rezultatów otrzymanych dla PostgreSQL i SQLite.
+Odtworzenie porównania wymaga utworzenia obu baz z tych samych danych CSV,
+uruchomienia odpowiadających sobie funkcji i porównania zwróconych ramek danych.
 
 Organizacja modułów
 ===================
@@ -107,11 +104,11 @@ Opis przygotowanych funkcji
 Ranking klientów według wartości zamówień
 -----------------------------------------
 
-Funkcja zwraca ranking klientów, którzy wygenerowali największą wartość
-zamówień.
+Funkcja zwraca ranking klientów według wartości opłaconych i nieanulowanych
+zamówień po uwzględnieniu historycznego rabatu.
 Zapytanie łączy dane z tabel klientów, zamówień oraz pozycji zamówień.
 Następnie grupuje rekordy według klienta i oblicza liczbę zamówień oraz
-łączną wartość zakupów.
+łączną wartość zakupów po rabacie.
 
 W zapytaniu wykorzystano między innymi:
 
@@ -124,11 +121,11 @@ W zapytaniu wykorzystano między innymi:
 Sprzedaż według kategorii
 -------------------------
 
-Funkcja zwraca zestawienie sprzedaży produktów z podziałem na kategorie. Dla
-każdej kategorii występującej w zarejestrowanych pozycjach zamówień obliczana
-jest liczba różnych sprzedanych produktów, liczba sprzedanych sztuk oraz łączna
-wartość sprzedaży. Kategorie i produkty, które nie występują w żadnej pozycji
-zamówienia, nie są uwzględniane w wyniku.
+Funkcja zwraca zestawienie opłaconej, nieanulowanej sprzedaży produktów
+z podziałem na kategorie. Dla każdej kategorii obliczana jest liczba różnych
+sprzedanych produktów, liczba sprzedanych sztuk oraz łączna wartość sprzedaży
+po historycznym rabacie. Kategorie i produkty bez takiej sprzedaży nie są
+uwzględniane w wyniku.
 
 W zapytaniu wykorzystano między innymi:
 
@@ -140,7 +137,8 @@ Szczegółowy widok zamówień
 ---------------------------
 
 Funkcja zwraca szczegółowy widok zamówień, obejmujący dane klienta, produktu,
-pozycji zamówienia, płatności oraz wysyłki.
+pozycji zamówienia, płatności, wysyłki, rabatu oraz wartość pozycji przed
+i po rabacie.
 
 Zapytanie wykorzystuje wiele złączeń, w tym ``JOIN`` oraz ``LEFT JOIN``.
 Dzięki temu możliwe jest pokazanie także takich zamówień, które nie mają
@@ -203,8 +201,6 @@ elementy języka SQL, w tym złączenia tabel, funkcje agregujące, grupowanie,
 sortowanie oraz podzapytania.
 
 Funkcje zostały przygotowane w dwóch wariantach: dla PostgreSQL oraz SQLite.
-Pozwala to sprawdzić, czy obie wersje bazy danych zwracają zgodne wyniki dla
-tych samych danych. Wyniki działania funkcji zostały zweryfikowane w notebookach
-JupyterLab przechowywanych jako materiały zewnętrzne, a dokumentacja funkcji
-została wygenerowana automatycznie przy użyciu mechanizmu ``autodoc`` dostępnego
-w Sphinx.
+Pozwala to porównywać wyniki obu wersji bazy dla tych samych danych.
+Dokumentacja funkcji została wygenerowana automatycznie przy użyciu mechanizmu
+``autodoc`` dostępnego w Sphinx.
