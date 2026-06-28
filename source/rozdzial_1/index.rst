@@ -3,85 +3,100 @@ Wprowadzenie
 ===========================
 
 :Autor:
-    Oskar Wrona
+    Kamil Lewandowski
+
+:Grupa projektowa:
+    Kamil Lewandowski, Adam Tarkowski, Oskar Wrona
 
 Rozdział stanowi indywidualne wprowadzenie do sprawozdania z kursu baz danych,
 realizowanego w semestrze letnim roku akademickiego 2025/2026.
 
+
 Wprowadzenie tematyczne
 =======================
 
-Ćwiczenia i eksperymenty przedstawione w raporcie obejmują pełny cykl pracy
-z relacyjną bazą danych: od poznania zagadnień związanych z jej utrzymaniem,
-przez analizę wymagań i projektowanie struktury danych, aż do implementacji,
-zasilenia bazy danymi oraz wykonywania zapytań. Część literaturowa przybliża
-praktyczne aspekty eksploatacji PostgreSQL, między innymi dobór sprzętu,
-konfigurację serwera, kontrolę i konserwację, monitorowanie, diagnostykę,
-partycjonowanie, bezpieczeństwo, tworzenie kopii zapasowych oraz zagadnienia
-wydajności, skalowania i replikacji.
+Ćwiczenia opisane w raporcie obejmują pełny cykl pracy z relacyjną bazą danych.
+Punktem wyjścia były badania literaturowe dotyczące utrzymania baz danych na
+przykładzie PostgreSQL. W tej części zebrano zagadnienia związane między innymi
+z doborem sprzętu, konfiguracją serwera, kontrolą i konserwacją bazy,
+monitorowaniem, diagnostyką, partycjonowaniem danych, bezpieczeństwem,
+tworzeniem kopii zapasowych oraz planowaniem wydajności, skalowania i replikacji.
+Pozwoliło to spojrzeć na bazę danych nie tylko jako na zestaw tabel, lecz także
+jako na system wymagający stałej administracji i świadomego utrzymania.
 
-Część projektowa została oparta na przykładzie systemu zarządzania sprzedażą
-w sklepie internetowym. Analizie poddano procesy związane z obsługą klientów,
-produktów, producentów, kategorii, kodów rabatowych, zamówień, płatności,
-wysyłek oraz opinii. Na tej podstawie przygotowano model konceptualny, model
-logiczny doprowadzony do trzeciej postaci normalnej oraz dwa modele fizyczne,
-dostosowane odpowiednio do PostgreSQL i SQLite. Szczególną uwagę poświęcono
-poprawnemu odwzorowaniu zależności między danymi, zachowaniu historii cen
-produktów w zamówieniach oraz zastosowaniu kluczy i więzów integralności.
+Część projektowa raportu została oparta na przykładzie systemu obsługującego
+sprzedaż w sklepie internetowym. W modelu uwzględniono klientów, produkty,
+producentów, kategorie, kody rabatowe, zamówienia, płatności, wysyłki oraz
+opinie. Na tej podstawie przygotowano model konceptualny, model logiczny
+z uwzględnieniem normalizacji oraz dwa modele fizyczne: osobny dla PostgreSQL
+i osobny dla SQLite. Istotne było zachowanie spójności pomiędzy modelami, a także
+takie odwzorowanie relacji, aby baza poprawnie przechowywała informacje
+o zamówieniach, pozycjach zamówień i cenach obowiązujących w momencie zakupu.
 
-W dalszej części raportu przedstawiono implementację schematów w obu systemach
-zarządzania bazą danych oraz wsadowe wprowadzanie danych z pliku CSV za pomocą
-skryptów napisanych w języku Python. Omówiono walidację danych, sprawdzanie
-istnienia rekordów powiązanych, kolejność operacji oraz obsługę transakcji
-i błędów. Do sprawdzenia działania utworzonych baz przygotowano następnie zapytania
-wykorzystujące złączenia, agregacje, grupowanie, sortowanie i podzapytania.
-Zapytania przygotowano oddzielnie dla PostgreSQL i SQLite, co umożliwia
-porównywanie działania obu silników na tym samym modelu i zbiorze danych.
+Kolejnym etapem była implementacja bazy danych w dwóch wariantach. Dla PostgreSQL
+i SQLite przygotowano definicje tabel, kluczy głównych, kluczy obcych oraz
+pozostałych ograniczeń integralności. Następnie baza została zasilona danymi
+z pliku CSV przy użyciu skryptów w języku Python. W tej części ważne było
+zachowanie właściwej kolejności wprowadzania rekordów, walidowanie danych
+wejściowych, sprawdzanie zależności między tabelami oraz obsługa sytuacji
+błędnych w taki sposób, aby nie pozostawiać w bazie częściowo zapisanych
+zamówień.
+
+Ostatnia część ćwiczeń dotyczyła zapytań SQL. Przygotowane zapytania pozwoliły
+sprawdzić, czy baza przechowuje dane w sposób umożliwiający uzyskanie praktycznych
+informacji, takich jak szczegóły zamówień, zestawienia sprzedaży, rankingi
+klientów, analiza kategorii produktów czy porównanie ocen. Zapytania zostały
+opracowane oddzielnie dla PostgreSQL i SQLite, dzięki czemu można było zauważyć
+zarówno podobieństwa wynikające ze wspólnego modelu relacyjnego, jak i różnice
+w składni oraz sposobie pracy obu systemów.
+
 
 Wnioski z ćwiczeń i eksperymentów
 =================================
 
-Przeprowadzone ćwiczenia pokazały, że jakość bazy danych zależy przede wszystkim
-od poprawnego rozpoznania procesów biznesowych i zależności pomiędzy danymi.
-Pomijanie kontekstu transakcji lub niewłaściwe odwzorowanie relacji
-wiele-do-wielu prowadziłoby do utraty istotnych informacji. W projekcie problem
-ten rozwiązano przez wprowadzenie tabeli ``Pozycje_Zamowienia``, która łączy
-zamówienia z produktami, a jednocześnie przechowuje liczbę sztuk i cenę
-historyczną.
+Po wykonaniu ćwiczeń można zauważyć, że projektowanie bazy danych wymaga przede
+wszystkim dobrego zrozumienia problemu, a nie tylko znajomości składni SQL. Przed
+utworzeniem tabel trzeba ustalić, jakie informacje są naprawdę potrzebne, które
+z nich są od siebie zależne i które powinny zostać zapisane jako dane historyczne.
+W projekcie sklepu internetowego dobrym przykładem jest cena produktu w zamówieniu.
+Nie może ona zależeć wyłącznie od aktualnej ceny w katalogu, ponieważ po zmianie
+cennika wcześniejsze zamówienia powinny nadal przedstawiać rzeczywisty stan
+transakcji.
 
-Normalizacja do trzeciej postaci normalnej ograniczyła powielanie informacji
-i ryzyko wystąpienia anomalii podczas dodawania, modyfikowania oraz usuwania
-danych. Jednocześnie wykazała, że bardziej uporządkowana struktura wymaga
-stosowania złączeń wielu tabel podczas odtwarzania pełnego obrazu procesu
-sprzedaży. Przygotowane zapytania pokazują, że taki model pozwala zarówno
-odtworzyć szczegóły zamówień, jak i wykonywać analizy, na przykład tworzyć
-ranking klientów, obliczać sprzedaż według kategorii czy zestawiać oceny
-produktów. Wartości sprzedaży są liczone dla zakończonych płatności,
-z pominięciem anulowanych zamówień i z uwzględnieniem historycznego rabatu.
+Model konceptualny i logiczny pomógł uporządkować sposób myślenia o danych.
+Rozdzielenie klientów, produktów, zamówień, płatności, wysyłek, kodów rabatowych
+i opinii zmniejsza powtarzanie danych oraz ogranicza ryzyko niespójności. Z drugiej
+strony widać, że bardziej poprawny model wymaga później dokładniejszego pisania
+zapytań, ponieważ wiele informacji trzeba uzyskać przez połączenie kilku tabel.
+Dla mnie był to ważny wniosek, bo pokazuje kompromis między przejrzystą strukturą
+bazy a wygodą pobierania danych.
 
-Implementacja w PostgreSQL i SQLite wykazała, że ten sam model logiczny może
-zostać przeniesiony pomiędzy różnymi systemami bazodanowymi, lecz wymaga
-dostosowania typów danych, sposobu generowania identyfikatorów i niektórych
-elementów składni. PostgreSQL oferuje bardziej precyzyjne typy, takie jak
-``NUMERIC`` i ``TIMESTAMP``, natomiast SQLite wykorzystuje prostszy system klas
-przechowywania. Mimo tych różnic oba rozwiązania realizują ten sam zestaw
-reguł integralności, a odpowiadające sobie zapytania umożliwiają porównanie
-wyników.
+Implementacja tego samego projektu w PostgreSQL i SQLite pokazała, że systemy
+relacyjne są do siebie podobne na poziomie ogólnego modelu, ale różnią się
+w szczegółach technicznych. PostgreSQL daje większe możliwości kontroli typów
+danych, pracy serwerowej i administracji. SQLite jest prostszy i wygodny do pracy
+lokalnej, ale wymaga uwzględnienia jego ograniczeń. Dlatego projekt fizyczny nie
+powinien być traktowany jako automatyczne przepisanie modelu logicznego, tylko
+jako dopasowanie rozwiązania do konkretnego silnika bazy danych.
 
-Eksperymenty z importem danych potwierdziły znaczenie walidacji, więzów
-integralności oraz transakcji. Dane muszą być dodawane w kolejności wynikającej
-z zależności między tabelami, a błąd jednej pozycji nie powinien pozostawiać
-niekompletnego zamówienia. Wiersze należące do tego samego zamówienia są
-przetwarzane w jednej transakcji, dlatego błąd dowolnej pozycji powoduje
-wycofanie całego zamówienia. Pozwala to zachować spójność bazy również podczas
-automatycznego zasilania jej większą liczbą rekordów.
+Import danych z pliku CSV pokazał praktyczne znaczenie kluczy obcych, transakcji
+i walidacji danych. Jeżeli rekordy są dodawane w złej kolejności albo dane
+wejściowe nie są sprawdzane, łatwo doprowadzić do błędów lub częściowo zapisanego
+zamówienia. Właśnie dlatego skrypt importujący powinien nie tylko wstawiać dane,
+ale też kontrolować ich poprawność i reagować na błędy w przewidywalny sposób.
 
-Całość prac pokazała również, że samo poprawne zaprojektowanie tabel nie
-wyczerpuje zagadnienia utrzymania bazy danych. W rzeczywistym środowisku równie
-ważne są konfiguracja serwera, monitorowanie, bezpieczeństwo, kopie zapasowe
-i planowanie wydajności. Projektowanie, implementacja, testowanie zapytań
-oraz administracja tworzą jeden powiązany proces, którego celem jest uzyskanie
-systemu spójnego, niezawodnego i możliwego do dalszego rozwoju.
+Zapytania SQL były dobrym sprawdzeniem, czy przygotowany model jest użyteczny.
+Na ich podstawie można było uzyskać informacje o zamówieniach, klientach,
+sprzedaży, ocenach produktów i kategoriach. To pokazało, że poprawnie
+zaprojektowana baza nie powinna jedynie przechowywać danych, ale powinna też
+umożliwiać ich sensowną analizę.
+
+Badania literaturowe uzupełniły część projektową o szerszy kontekst utrzymania
+baz danych. W praktyce nie wystarczy utworzyć schematu i napisać kilku zapytań.
+Trzeba również myśleć o kopiach zapasowych, bezpieczeństwie, monitorowaniu,
+diagnostyce, konfiguracji serwera i wydajności. Końcowy wniosek jest taki, że
+baza danych jest częścią większego systemu, który trzeba projektować, testować
+i utrzymywać w sposób uporządkowany.
 
 
 Spis wszystkich użytych w raporcie repozytoriów
@@ -112,4 +127,4 @@ Implementacja
 Repozytorium główne
 --------------------
 
-* `Repozytorium główne <https://github.com/OskarProgrammer/bazy_danych_glowne_3.git>`_
+* `Repozytorium główne <https://github.com/284368user/bazy_danych_glowne_3>`_

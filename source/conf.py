@@ -11,8 +11,8 @@ import sys
 sys.path.insert(0, os.path.abspath("./rozdzial_5"))
 
 project = 'Sprawozdanie z laboratorium'
-copyright = '2026, Gal 2'
-author = 'Gal 2'
+copyright = '2026, Kamil Lewandowski'
+author = 'Kamil Lewandowski'
 release = '0.0.1'
 
 # -- General configuration ---------------------------------------------------
