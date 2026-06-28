@@ -10,9 +10,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath("./rozdzial_5"))
 
-project = 'Sprawozdanie z laboratorium'
-copyright = '2026, Kamil Lewandowski'
-author = 'Kamil Lewandowski'
+project = 'Sprawozdanie z laboratorium bazy danych'
+copyright = '2026, Kamil Lewandowski 284368'
+author = 'Kamil Lewandowski 284368'
 release = '0.0.1'
 
 # -- General configuration ---------------------------------------------------

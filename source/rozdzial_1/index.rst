@@ -5,9 +5,6 @@ Wprowadzenie
 :Autor:
     Kamil Lewandowski
 
-:Grupa projektowa:
-    Kamil Lewandowski, Adam Tarkowski, Oskar Wrona
-
 Rozdział stanowi indywidualne wprowadzenie do sprawozdania z kursu baz danych,
 realizowanego w semestrze letnim roku akademickiego 2025/2026.
 
@@ -15,7 +12,7 @@ realizowanego w semestrze letnim roku akademickiego 2025/2026.
 Wprowadzenie tematyczne
 =======================
 
-Ćwiczenia opisane w raporcie obejmują główne etapy pracy z relacyjną bazą danych.
+Ćwiczenia opisane w raporcie obejmują pełny cykl pracy z relacyjną bazą danych.
 Punktem wyjścia były badania literaturowe dotyczące utrzymania baz danych na
 przykładzie PostgreSQL. W tej części zebrano zagadnienia związane między innymi
 z doborem sprzętu, konfiguracją serwera, kontrolą i konserwacją bazy,
